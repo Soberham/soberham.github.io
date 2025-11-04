@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>红色传承·青春使命 - 武汉大学物理学院团日活动</title>
+    <meta name="description" content="武汉大学物理科学与技术学院2024级强基班团日活动，通过抗日谍战剧本杀体验红色精神，传承爱国情怀">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary-red: #C41E3A;
+            --gold: #FFD700;
+            --bg-cream: #FAF7F0;
+            --text-dark: #2C3E50;
+            --text-light: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+        }
+        
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 900;
+        }
+        
+        .section-title {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 700;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(196, 30, 58, 0.9), rgba(255, 215, 0, 0.3)), 
+                        url('resources/hero_image.png') center/cover;
+            min-height: 100vh;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(196, 30, 58, 0.2);
+        }
+        
+        .red-glow {
+            box-shadow: 0 0 20px rgba(196, 30, 58, 0.3);
+        }
+        
+        .gold-accent {
+            background: linear-gradient(45deg, var(--gold), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .particle-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .content-layer {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .role-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--primary-red);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .role-card:hover {
+            background: rgba(196, 30, 58, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .role-card.selected {
+            background: var(--primary-red);
+            color: white;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--primary-red);
+            background: rgba(196, 30, 58, 0.05);
+        }
+        
+        .quiz-option.correct {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .quiz-option.incorrect {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .floating-star {
+            position: absolute;
+            color: var(--gold);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(10px);
+            background: rgba(250, 247, 240, 0.9);
+        }
+        
+        .splide__arrow {
+            background: var(--primary-red) !important;
+            opacity: 0.8;
+        }
+        
+        .splide__arrow:hover {
+            opacity: 1;
+        }
+        
+        .splide__pagination__page.is-active {
+            background: var(--primary-red) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 nav-blur border-b border-red-200">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">★</span>
+                    </div>
+                    <span class="section-title text-lg text-red-600">红色传承</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="text-red-600 font-medium hover:text-red-800 transition-colors">首页</a>
+                    <a href="activity.html" class="text-gray-700 hover:text-red-600 transition-colors">活动详情</a>
+                    <a href="reflections.html" class="text-gray-700 hover:text-red-600 transition-colors">同学感悟</a>
+                </div>
+                <button class="md:hidden text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg relative overflow-hidden">
+        <div id="particle-container" class="particle-bg"></div>
+        <div class="content-layer min-h-screen flex items-center justify-center px-4">
+            <div class="text-center text-white max-w-4xl mx-auto">
+                <div class="floating-star text-4xl top-20 left-10">★</div>
+                <div class="floating-star text-3xl top-32 right-20" style="animation-delay: 1s;">★</div>
+                <div class="floating-star text-2xl bottom-32 left-20" style="animation-delay: 2s;">★</div>
+                <div class="floating-star text-3xl bottom-20 right-10" style="animation-delay: 0.5s;">★</div>
+                
+                <h1 class="hero-title text-4xl md:text-6xl mb-6">
+                    <span id="typed-title"></span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl mb-8 opacity-90">
+                    武汉大学物理科学与技术学院2024级强基班团日活动纪实
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                    <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4">
+                        <div class="text-sm opacity-80">活动时间</div>
+                        <div class="text-lg font-semibold">2025年10月24日</div>
+                    </div>
+                    <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4">
+                        <div class="text-sm opacity-80">活动地点</div>
+                        <div class="text-lg font-semibold">物院新楼D502</div>
+                    </div>
+                    <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4">
+                        <div class="text-sm opacity-80">参与人数</div>
+                        <div class="text-lg font-semibold">7人剧本杀</div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="scrollToSection('roles')" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105">
+                        体验角色扮演
+                    </button>
+                    <button onclick="scrollToSection('quiz')" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-red-600 px-8 py-3 rounded-full font-semibold transition-all">
+                        红色知识问答
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Activity Overview -->
+    <section class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="section-title text-3xl md:text-4xl text-red-600 mb-4">活动概览</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    通过抗日谍战剧本杀，我们在寓教于乐中传承红色基因，培养爱国精神
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white rounded-xl p-8 shadow-lg card-hover fade-in">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <span class="text-2xl">🎭</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-4">剧本杀体验</h3>
+                    <p class="text-gray-600 text-center">
+                        7位同学全身心投入抗日谍战剧本，仿佛回到那个艰苦卓绝的年代，体验革命先辈的英勇斗争。
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 shadow-lg card-hover fade-in">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <span class="text-2xl">❤️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-4">爱国情怀</h3>
+                    <p class="text-gray-600 text-center">
+                        在最终选择是否与日军战斗到底时，所有人都选择了战斗到底，体现了团日活动的教育成效。
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 shadow-lg card-hover fade-in">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <span class="text-2xl">🤝</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-4">团结友谊</h3>
+                    <p class="text-gray-600 text-center">
+                        分享零食，分享快乐，分享思想政治上的体悟，在活动中建立了深厚的同学情谊。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Selection -->
+    <section id="roles" class="py-20 px-4 bg-red-50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="section-title text-3xl md:text-4xl text-red-600 mb-4">剧本杀角色体验</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    选择你想要体验的角色，代入他们的视角感受那个战火纷飞的年代
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <div class="role-card fade-in" onclick="selectRole(this, '地下党员')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">👤</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">地下党员</h3>
+                        <p class="text-sm text-gray-600">潜伏在敌人内部，传递重要情报</p>
+                    </div>
+                </div>
+                
+                <div class="role-card fade-in" onclick="selectRole(this, '抗日战士')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">💂</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">抗日战士</h3>
+                        <p class="text-sm text-gray-600">前线作战，保卫家国</p>
+                    </div>
+                </div>
+                
+                <div class="role-card fade-in" onclick="selectRole(this, '情报员')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">📨</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">情报员</h3>
+                        <p class="text-sm text-gray-600">负责情报传递，生死一线</p>
+                    </div>
+                </div>
+                
+                <div class="role-card fade-in" onclick="selectRole(this, '军医')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">⚕️</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">军医</h3>
+                        <p class="text-sm text-gray-600">救死扶伤，见证战争残酷</p>
+                    </div>
+                </div>
+                
+                <div class="role-card fade-in" onclick="selectRole(this, '记者')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">📰</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">战地记者</h3>
+                        <p class="text-sm text-gray-600">记录历史，传播真相</p>
+                    </div>
+                </div>
+                
+                <div class="role-card fade-in" onclick="selectRole(this, '学生')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-white text-2xl">🎓</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">爱国学生</h3>
+                        <p class="text-sm text-gray-600">青春热血，为国奉献</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="role-description" class="text-center bg-white rounded-xl p-8 shadow-lg hidden fade-in">
+                <h3 class="text-xl font-semibold mb-4 text-red-600">角色背景故事</h3>
+                <p id="role-story" class="text-gray-700 leading-relaxed"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Gallery -->
+    <section class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="section-title text-3xl md:text-4xl text-red-600 mb-4">活动精彩瞬间</h2>
+                <p class="text-lg text-gray-600">记录团日活动中的难忘时刻</p>
+            </div>
+            
+            <div class="splide fade-in" id="photo-carousel">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        <li class="splide__slide">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg">
+                                <img src="./resources/focus_image.png" 
+                                     alt="同学们认真参与剧本杀" class="w-full h-64 md:h-80 object-cover">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                                    <p class="text-white font-medium">同学们全身心投入剧本角色</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg">
+                                <img src="./resources/snacks_image.png" 
+                                     alt="团日活动场景" class="w-full h-64 md:h-80 object-cover">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                                    <p class="text-white font-medium">同学们分享美味零食</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg">
+                                <img src="https://kimi-web-img.moonshot.cn/img/eng.chinamil.com.cn/249a89a59469ca0cdeb546910a9589325c3cd5a9.jpg" 
+                                     alt="历史教育意义" class="w-full h-64 md:h-80 object-cover">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                                    <p class="text-white font-medium">铭记历史，传承精神</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg">
+                                <img src="https://kimi-web-img.moonshot.cn/img/wiki.china.org.cn/6fb912c88d66f6c5c789c891e6897c5045e9fa57.jpg" 
+                                     alt="青年团员活动" class="w-full h-64 md:h-80 object-cover">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                                    <p class="text-white font-medium">青年团员的使命与担当</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Section -->
+    <section id="quiz" class="py-20 px-4 bg-red-50">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="section-title text-3xl md:text-4xl text-red-600 mb-4">红色知识问答</h2>
+                <p class="text-lg text-gray-600">通过问答深化对抗日战争历史的理解</p>
+            </div>
+            
+            <div id="quiz-container" class="bg-white rounded-xl shadow-lg p-8 fade-in">
+                <div id="quiz-question" class="mb-8">
+                    <h3 class="text-xl font-semibold mb-6" id="question-text">加载中...</h3>
+                    <div id="quiz-options" class="space-y-4">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        题目 <span id="current-question">1</span> / <span id="total-questions">5</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="prev-btn" onclick="previousQuestion()" class="px-6 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors" disabled>
+                            上一题
+                        </button>
+                        <button id="next-btn" onclick="nextQuestion()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            下一题
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="quiz-result" class="hidden mt-8 p-6 bg-red-50 rounded-lg text-center">
+                    <h3 class="text-2xl font-semibold text-red-600 mb-4">测试完成！</h3>
+                    <p class="text-lg mb-4">您的得分：<span id="final-score" class="font-bold text-red-600"></span></p>
+                    <p id="score-message" class="text-gray-700"></p>
+                    <button onclick="restartQuiz()" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        重新测试
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-20 px-4 bg-red-600 text-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="section-title text-3xl md:text-4xl mb-6">传承红色基因，担当时代使命</h2>
+            <p class="text-xl mb-8 opacity-90">
+                这次团日活动不仅是一次游戏，更是一次深刻的爱国主义教育
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="activity.html" class="bg-white text-red-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105">
+                    查看活动详情
+                </a>
+                <a href="reflections.html" class="border-2 border-white text-white hover:bg-white hover:text-red-600 px-8 py-3 rounded-full font-semibold transition-all">
+                    阅读同学感悟
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="flex items-center justify-center space-x-2 mb-6">
+                <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">★</span>
+                </div>
+                <span class="section-title text-xl">武汉大学物理科学与技术学院</span>
+            </div>
+            <p class="text-gray-400 mb-4">2024级强基班团日活动</p>
+            <p class="text-gray-500 text-sm">铭记历史 • 传承精神 • 担当使命</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>
