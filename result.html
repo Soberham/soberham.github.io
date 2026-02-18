@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>答题结果 - 2021级11班</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .title-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #FF6B35 0deg, #F7931E 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .score-inner {
+            width: 160px;
+            height: 160px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .celebration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FF6B35;
+            animation: fall 3s linear infinite;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="result-card p-8 max-w-md w-full text-center relative">
+        <!-- 庆祝动画容器 -->
+        <div id="celebration" class="celebration"></div>
+        
+        <!-- 结果标题 -->
+        <h1 class="title-font text-3xl font-bold text-gray-800 mb-6">答题完成！</h1>
+        
+        <!-- 分数显示 -->
+        <div class="score-circle mx-auto mb-6">
+            <div class="score-inner">
+                <div id="final-score" class="text-4xl font-bold text-orange-600">0</div>
+                <div class="text-lg text-gray-600">分</div>
+            </div>
+        </div>
+        
+        <!-- 评价文字 -->
+        <div id="evaluation" class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">你是个假11班人吧？</h2>
+            <p id="evaluation-text" class="text-gray-600">看来你对11班的了解还需要加强哦~</p>
+        </div>
+        
+        <!-- 重新开始按钮 -->
+        <button id="restart-btn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-full font-bold text-lg hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300">
+            再测一次
+        </button>
+        
+        <!-- 分享提示 -->
+        <div class="mt-6 text-sm text-gray-500">
+            <p>分享给其他同学，看看谁更了解11班！</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const score = parseInt(urlParams.get('score') || '0');
+        
+        // 显示分数动画
+        function animateScore(targetScore) {
+            const scoreElement = document.getElementById('final-score');
+            let currentScore = 0;
+            const increment = targetScore / 50;
+            
+            const timer = setInterval(() => {
+                currentScore += increment;
+                if (currentScore >= targetScore) {
+                    currentScore = targetScore;
+                    clearInterval(timer);
+                }
+                scoreElement.textContent = Math.round(currentScore);
+            }, 30);
+        }
+        
+        // 根据分数显示评价
+        function showEvaluation(score) {
+            const evaluationTitle = document.querySelector('#evaluation h2');
+            const evaluationText = document.getElementById('evaluation-text');
+            
+            if (score >= 0 && score <= 20) {
+                evaluationTitle.textContent = '你是个假11班人吧？';
+                evaluationText.textContent = '看来你对11班的了解还需要加强哦~';
+            } else if (score <= 40) {
+                evaluationTitle.textContent = '看来你对11班了解不够深入哦~';
+                evaluationText.textContent = '再多了解一下班级的趣事吧！';
+            } else if (score <= 60) {
+                evaluationTitle.textContent = '还算是个合格的11班人！';
+                evaluationText.textContent = '不错的成绩，继续保持对班级的关注！';
+            } else if (score <= 80) {
+                evaluationTitle.textContent = '不错不错，你是11班的铁杆粉丝！';
+                evaluationText.textContent = '你对班级很了解，是个真正的11班人！';
+            } else {
+                evaluationTitle.textContent = '恭喜！你是11班的超级学霸！';
+                evaluationText.textContent = '完美的成绩！你对11班的了解无人能及！';
+                // 高分时显示庆祝动画
+                showCelebration();
+            }
+        }
+        
+        // 庆祝动画
+        function showCelebration() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#FF6B35', '#F7931E', '#10B981', '#3B82F6', '#8B5CF6'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.random() * colors.length | 0];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    celebration.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+        
+        // 重新开始
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        // 页面加载时执行动画
+        window.addEventListener('load', () => {
+            animateScore(score);
+            setTimeout(() => {
+                showEvaluation(score);
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
